@@ -103,7 +103,7 @@ const getItemPage = async (urladdon = "/the-story-of-nintendo-2023") => {
       data.push({
         title: title,
         eps: eps,
-        videourl: 'https://'+videourl,
+        videourl: encodeURIComponent('https://'+videourl),
         description: description,
       });
     });
@@ -112,6 +112,27 @@ const getItemPage = async (urladdon = "/the-story-of-nintendo-2023") => {
   }
   return data;
 };
+
+
+const getVideoPage = async (link = "https://movembed.cc/streaming.php?id=Mzk0NDQ5&title=Brahmastra+Part+One%3A+Shiva&typesub=SUB&sub=&cover=L2NvdmVyL2JyYWhtYXN0cmEtcGFydC1vbmUtc2hpdmEtMjAyMi0xNjg2NTQwMzI1LmpwZw==") => {
+  const data = [];
+  try {
+    const response = await axios.get(link);
+    const $ = cheerio.load(response.data);
+    const $cont = $('ul.list-server-items li')
+    $cont.each(function (){
+      const title = $(this).text().trim();
+      const url = $(this).prop('data-video')
+      data.push({
+        streamtitle:title,streamurl:url,
+      })
+    })
+  } catch (err) {
+    console.log(err);
+  }
+  return data
+};
+
 
 //-----------------------Funtions-------------------------
 // getPageItems()
@@ -208,6 +229,22 @@ app.get('/search/:key/:page',(req,res)=>{
 //--------------------Items Page----------------------------
 app.get('/videos/:id',(req,res)=>{
   Promise.resolve(getItemPage(urladdon=req.params['id'])).then((s) => {
+    if (s === []|| s===null) {
+      res.statusCode = 403;
+      res.send("Forbidden");
+    }
+    else {
+      res.send(s)
+    }
+  });
+});
+
+//-----------------------Item Page End-----------------------
+
+app.get('/stream/extract',(req,res)=>{//link=req.query.link
+  Promise.resolve(getVideoPage(link=req.query.link))
+  .then((s) => {
+    console.log(req.query.link)
     if (s === []|| s===null) {
       res.statusCode = 403;
       res.send("Forbidden");
