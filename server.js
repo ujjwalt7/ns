@@ -87,7 +87,7 @@ const getItemPage = async (urladdon = "/the-story-of-nintendo-2023") => {
         .trim();
       const eps = [];
       $(this)
-        .find("ul.listing.items.lists")
+        .find("ul.listing.items.lists li")
         .each(function () {
           const title = $(this).find("div.name").text().trim();
           const meta = $(this).find("div.meta").text().trim();
